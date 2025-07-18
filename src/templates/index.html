@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Low Value Video Checker</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            position: relative;
+            z-index: 10;
+        }
+        
+        .card {
+            background-color: rgba(20, 20, 20, 0.8);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(128, 0, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .card-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: rgba(30, 30, 30, 0.5);
+            border-radius: 15px 15px 0 0 !important;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #8A2BE2, #4169E1);
+            border: none;
+            box-shadow: 0 4px 15px rgba(65, 105, 225, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(65, 105, 225, 0.6);
+            background: linear-gradient(135deg, #9932CC, #4169E1);
+        }
+        
+        .file-upload {
+            position: relative;
+            overflow: hidden;
+            margin: 10px 0;
+            background: rgba(40, 40, 40, 0.6);
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .file-upload:hover {
+            border-color: rgba(138, 43, 226, 0.6);
+            background: rgba(50, 50, 50, 0.6);
+        }
+        
+        .file-upload input[type=file] {
+            position: absolute;
+            font-size: 100px;
+            opacity: 0;
+            right: 0;
+            top: 0;
+            cursor: pointer;
+            height: 100%;
+            width: 100%;
+        }
+        
+        .file-upload-label {
+            display: inline-block;
+            cursor: pointer;
+        }
+        
+        .result-card {
+            display: none;
+            margin-top: 30px;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #8A2BE2, #4169E1);
+        }
+        
+        .form-control {
+            background-color: rgba(50, 50, 50, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .form-control:focus {
+            background-color: rgba(60, 60, 60, 0.6);
+            color: white;
+            border-color: #8A2BE2;
+            box-shadow: 0 0 0 0.25rem rgba(138, 43, 226, 0.25);
+        }
+        
+        .form-label {
+            color: #ffffff;
+        }
+        
+        .caption-item {
+            background-color: rgba(40, 40, 40, 0.8);
+            border-left: 3px solid #8A2BE2;
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border-radius: 5px;
+            color: #ffffff;
+        }
+        
+        .metric-badge {
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+        
+        .badge-success {
+            background-color: rgba(40, 167, 69, 0.2);
+            color: #2ECC71;
+            border: 1px solid rgba(46, 204, 113, 0.3);
+        }
+        
+        .badge-warning {
+            background-color: rgba(255, 193, 7, 0.2);
+            color: #FFC107;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+        
+        .badge-danger {
+            background-color: rgba(220, 53, 69, 0.2);
+            color: #DC3545;
+            border: 1px solid rgba(220, 53, 69, 0.3);
+        }
+        
+        .logo {
+            max-width: 50px;
+            margin-right: 15px;
+        }
+        
+        .navbar {
+            background-color: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(10px);
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600;
+            color: #ffffff;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .file-name {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #ffffff;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .file-item {
+            background: rgba(40, 40, 40, 0.7);
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .file-remove {
+            color: #DC3545;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .file-remove:hover {
+            transform: scale(1.2);
+        }
+        
+        .video-result {
+            margin-bottom: 25px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .video-result:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <i class="fas fa-film logo"></i>
+                <span>Video Analyzer</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="mb-0"><i class="fas fa-video me-2"></i>Low Value Video Checker</h2>
+                    </div>
+                    <div class="card-body">
+                        <form id="uploadForm" action="/analyze" method="POST" enctype="multipart/form-data">
+                            <div class="mb-4">
+                                <label for="business" class="form-label">Business Context</label>
+                                <input type="text" class="form-control" id="business" name="business" placeholder="Enter business context..." required>
+                            </div>
+                            
+                            <div class="file-upload mb-4">
+                                <input type="file" name="video" id="videoFiles" accept="video/*" multiple required>
+                                <label for="videoFiles" class="file-upload-label">
+                                    <i class="fas fa-cloud-upload-alt fa-3x mb-3"></i>
+                                    <h4>Drag & Drop your videos here</h4>
+                                    <p style="color: #ffffff;">or click to browse files (up to 5 videos)</p>
+                                </label>
+                            </div>
+                            
+                            <div id="selectedFiles" class="mb-4">
+                                <!-- Selected files will appear here -->
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-search-plus me-2"></i>Analyze Videos
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <!-- Loading indicator -->
+                        <div id="loading" class="loading mt-4">
+                            <div class="spinner-border text-primary mb-3" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <h5>Analyzing your videos...</h5>
+                            <div class="progress mt-3">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%" id="progressBar"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Results Card -->
+                <div id="result" class="card result-card">
+                    <div class="card-header">
+                        <h3 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Analysis Results</h3>
+                    </div>
+                    <div class="card-body" id="resultContent">
+                        <!-- Results will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Handle multiple file selection
+        const videoFilesInput = document.getElementById("videoFiles");
+        const selectedFilesContainer = document.getElementById("selectedFiles");
+        const maxFiles = 5;
+        let selectedFiles = [];
+        
+        videoFilesInput.addEventListener("change", function() {
+            const files = Array.from(this.files);
+            console.log("Files selected:", files.length); // Debug log
+            
+            // Check if user is trying to upload more than 5 files
+            if (selectedFiles.length + files.length > maxFiles) {
+                alert(`You can upload a maximum of ${maxFiles} videos.`);
+                return;
+            }
+            
+            // Add new files to the array
+            files.forEach(file => {
+                if (!selectedFiles.some(f => f.name === file.name)) {
+                    selectedFiles.push(file);
+                }
+            });
+            
+            // Update the UI
+            updateSelectedFilesUI();
+        });
+        
+        function updateSelectedFilesUI() {
+            selectedFilesContainer.innerHTML = '';
+            
+            selectedFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div>
+                        <i class="fas fa-file-video me-2"></i>
+                        <span style="color: white;">${file.name}</span>
+                    </div>
+                    <i class="fas fa-times file-remove" data-index="${index}"></i>
+                `;
+                selectedFilesContainer.appendChild(fileItem);
+            });
+            
+            // Add event listeners to remove buttons
+            document.querySelectorAll('.file-remove').forEach(button => {
+                button.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    selectedFiles.splice(index, 1);
+                    updateSelectedFilesUI();
+                });
+            });
+        }
+        
+        // Form handling
+        document.getElementById("uploadForm").onsubmit = async function (e) {
+            e.preventDefault();
+            
+            // Show loading
+            document.getElementById("loading").style.display = "block";
+            
+            const formData = new FormData();
+            formData.append("business", document.getElementById("business").value);
+            
+            // Append all selected files
+            selectedFiles.forEach(file => {
+                formData.append("video", file);
+            });
+            
+            const resultDiv = document.getElementById("result");
+            
+            try {
+                // Start progress bar animation
+                let progress = 0;
+                const progressBar = document.getElementById("progressBar");
+                const progressInterval = setInterval(() => {
+                    progress += Math.random() * 5;
+                    if (progress > 95) progress = 95; // Cap at 95% until actual completion
+                    progressBar.style.width = progress + "%";
+                }, 200);
+                
+                // Send the request to the server
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                clearInterval(progressInterval);
+                progressBar.style.width = "100%";
+                
+                if (!response.ok) {
+                    throw new Error("Server error: " + (response.statusText || "Unknown error"));
+                }
+
+                const results = await response.json();
+                
+                // Hide loading indicator after a short delay
+                setTimeout(() => {
+                    document.getElementById("loading").style.display = "none";
+                }, 500);
+                
+                // Show result card
+                resultDiv.style.display = "block";
+                
+                // Set result content - multiple video results
+                let resultHTML = '';
+                
+                if (results.error) {
+                    resultHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Error:</strong> ${results.error}
+                        </div>
+                    `;
+                } else {
+                    // Check if results is an array, if not convert it to an array
+                    const resultsArray = Array.isArray(results) ? results : [results];
+                    
+                    resultsArray.forEach(result => {
+                        // Determine badge classes based on results
+                        const verdictClass = result.verdict === 'High Value' ? "badge-success" : "badge-danger";
+                        
+                        // Handle blurry frames count
+                        let blurryClass = "badge-danger"; // Default to danger
+                        if (result.blurry) {
+                            const blurryText = result.blurry.toString().toLowerCase();
+                            if (blurryText.includes("frames are blurry")) {
+                                const match = blurryText.match(/(\d+)\/\d+/);
+                                if (match) {
+                                    const blurryCount = parseInt(match[1]);
+                                    if (blurryCount === 0) {
+                                        blurryClass = "badge-success"; // 0 blurry frames
+                                    } else if (blurryCount === 1) {
+                                        blurryClass = "badge-warning"; // 1 blurry frame
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Handle relevance percentage
+                        let relevanceClass = "badge-danger"; // Default to danger
+                        if (result.relevance) {
+                            const relevanceText = result.relevance.toString().toLowerCase();
+                            const percentMatch = relevanceText.match(/(\d+(\.\d+)?)%/);
+                            if (percentMatch) {
+                                const percentage = parseFloat(percentMatch[1]);
+                                if (percentage >= 70) {
+                                    relevanceClass = "badge-success"; // High relevance
+                                } else if (percentage >= 40) {
+                                    relevanceClass = "badge-warning"; // Medium relevance
+                                }
+                            } else if (relevanceText.includes("good")) {
+                                relevanceClass = "badge-success";
+                            } else if (relevanceText.includes("medium")) {
+                                relevanceClass = "badge-warning";
+                            }
+                        }
+                        
+                        // Add this video's result to the overall HTML
+                        resultHTML += `
+                            <div class="video-result">
+                                <div class="mb-4">
+                                    <h4 ><i class="fas fa-file-video me-2"></i>${result.fileName}</h4>
+                                </div>
+
+                                <div class="mb-4">
+                                    <h5>Overall Verdict</h5>
+                                    <span class="metric-badge ${verdictClass}">
+                                        <i class="fas ${result.verdict === 'High Value' ? 'fa-check-circle' : 'fa-times-circle'} me-2"></i>${result.verdict}
+                                    </span>
+                                </div>
+                                
+                                <div class="row mb-4">
+                                    <div class="col-md-6 mb-3">
+                                        <h5>Blurriness</h5>
+                                        <span class="metric-badge ${blurryClass}">
+                                            <i class="fas fa-image me-2"></i>${result.blurry}
+                                        </span>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <h5>Relevance</h5>
+                                        <span class="metric-badge ${relevanceClass}">
+                                            <i class="fas fa-bullseye me-2"></i>${result.relevance}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <h5>Video Content Captions</h5>
+                                    <div class="caption-list mt-3">
+                                        ${Array.isArray(result.captions) ? 
+                                            result.captions.map(caption => `
+                                                <div class="caption-item">
+                                                    <i class="fas fa-closed-captioning me-2"></i>${caption}
+                                                </div>
+                                            `).join('') : 
+                                            `<div class="caption-item">
+                                                <i class="fas fa-closed-captioning me-2"></i>No captions available
+                                            </div>`
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                // Set the HTML content
+                document.getElementById("resultContent").innerHTML = resultHTML;
+                
+                // Scroll to results
+                resultDiv.scrollIntoView({ behavior: 'smooth' });
+                
+            } catch (err) {
+                // Hide loading indicator
+                document.getElementById("loading").style.display = "none";
+                
+                // Show error in result card
+                resultDiv.style.display = "block";
+                document.getElementById("resultContent").innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Error:</strong> ${err.message}
+                    </div>
+                `;
+                
+                // Scroll to error message
+                resultDiv.scrollIntoView({ behavior: 'smooth' });
+            }
+        };
+    </script>
+</body>
+</html>

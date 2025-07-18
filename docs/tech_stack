@@ -1,0 +1,9 @@
+# Tech Stack Used
+
+- **Programming Language**: Python 3.8+
+- **Computer Vision**: OpenCV
+- **Captioning Model**: BLIP (BLIP-Large from HuggingFace)
+- **Text Similarity**: Sentence Transformers (`all-mpnet-base-v2`)
+- **Image Processing**: PIL
+- **Model Libraries**: PyTorch, Transformers
+- **Optional Web App**: Flask (if applicable)
